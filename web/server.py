@@ -9,13 +9,56 @@ engine = db.createEngine()
 
 app = Flask(__name__)
 
+@app.route('/espar/<num>')
+def espar(num):
+    return "true" if int(num) % 2 == 0 else "false"
+
+
+@app.route('/esprimo/<num>')
+def esprimo(num):
+    max_test = int(int(num) ** 0.5 + 1)
+    for i in range(2, max_test):
+        if int(num) % i == 0:
+            return "false"
+    return "true"                    
+
 
 @app.route('/static/<content>')
 def static_content(content):
     return render_template(content)
 
 
+@app.route('/create_user/<user_name>/<user_fullname>/<user_username>/<user_pw>')
+def create_user(user_name, user_fullname, user_username, user_pw):
+    user = entities.User(
+            name = user_name,
+            fullname = user_fullname,
+            password = user_pw,
+            username = user_username
+    )
+    db_session = db.getSession(engine)
+    db_session.add(user)
+    db_session.commit()
+    
+    return "User created"
 
+@app.route('/read_users')
+def read_users():
+    db_session = db.getSession(engine)
+    ans = db_session.query(entities.User)
+    users = ans[:]
+
+    ret = '<table><tr><th>Name</th><th>Fullname</th><th>Username</th><th>Password</th>'
+
+    for i in range(len(users)):
+        ret += '<tr>'
+        ret = ret + '<td>|| ' + users[i].name + '</td>'
+        ret = ret + '<td>|| ' + users[i].fullname + '</td>'
+        ret = ret + '<td>|| ' + users[i].username + '</td>'
+        ret = ret + '<td>|| ' + users[i].password + '</td>'
+        ret += '</tr>'
+    
+    return ret
 
 if __name__ == '__main__':
     app.secret_key = ".."
