@@ -1,4 +1,5 @@
 from flask import Flask,render_template, request, session, Response, redirect
+
 from database import connector
 from model import entities
 import json
@@ -49,7 +50,7 @@ def read_users():
     users = ans[:]
 
     ret = '<table><tr><th>Name</th><th>Fullname</th><th>Username</th><th>Password</th>'
-
+    
     for i in range(len(users)):
         ret += '<tr>'
         ret = ret + '<td>|| ' + users[i].name + '</td>'
@@ -57,8 +58,39 @@ def read_users():
         ret = ret + '<td>|| ' + users[i].username + '</td>'
         ret = ret + '<td>|| ' + users[i].password + '</td>'
         ret += '</tr>'
-    
+
     return ret
+
+
+@app.route('/login/<usr>/<pw>')
+def login(usr, pw):
+    db_session = db.getSession(engine)
+    ans = db_session.query(entities.User).filter(
+        entities.User.username == usr        
+    ).filter(
+        entities.User.password == pw
+    )
+    users = ans[:]
+
+    if len(users) == 0:
+        return "invalid"
+    else:
+        return "welcome " + usr
+
+
+
+@app.route('/palindrome/<word>')
+def palindrome(word):
+    return word + (" is a palindrome!" if word == word[::-1] else " is not a palindrome") 
+
+
+@app.route('/multiplo/<num1>/<num2>')
+def multiplo(num1, num2):
+    if int(num2) == 0:
+        return "ERROR: input invalido para num2: no es posible dividir entre 0"
+    return num1 + ('' if int(num1) % int(num2) == 0 else " no") + " es multiplo de " + num2
+
+ 
 
 if __name__ == '__main__':
     app.secret_key = ".."
